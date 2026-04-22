@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   Package,
   PackageCheck,
+  Settings,
   Truck,
   XCircle,
   type LucideIcon,
@@ -150,16 +151,29 @@ const NotificationsBell = () => {
       <PopoverContent align="end" className="w-80 p-0">
         <div className="flex items-center justify-between border-b px-4 py-3">
           <span className="text-sm font-semibold">Notifications</span>
-          {unread > 0 && (
+          <div className="flex items-center gap-1">
+            {unread > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2 text-xs"
+                onClick={handleMarkAll}
+              >
+                <Check /> Mark all read
+              </Button>
+            )}
             <Button
+              asChild
               variant="ghost"
-              size="sm"
-              className="h-7 px-2 text-xs"
-              onClick={handleMarkAll}
+              size="icon"
+              className="h-7 w-7"
+              title="Notification preferences"
             >
-              <Check /> Mark all read
+              <Link to="/settings/notifications" onClick={() => setOpen(false)}>
+                <Settings />
+              </Link>
             </Button>
-          )}
+          </div>
         </div>
         <ScrollArea className="max-h-96">
           {items.length === 0 ? (

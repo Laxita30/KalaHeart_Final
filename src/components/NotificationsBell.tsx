@@ -1,6 +1,15 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Bell, Check, Package } from "lucide-react";
+import {
+  Bell,
+  Check,
+  CheckCircle2,
+  Package,
+  PackageCheck,
+  Truck,
+  XCircle,
+  type LucideIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -37,6 +46,39 @@ const formatTime = (iso: string) => {
   const d = Math.floor(h / 24);
   return `${d}d ago`;
 };
+
+type TypeStyle = { icon: LucideIcon; bg: string; fg: string };
+
+const TYPE_STYLES: Record<string, TypeStyle> = {
+  order_accepted: {
+    icon: CheckCircle2,
+    bg: "bg-emerald-500/10",
+    fg: "text-emerald-600 dark:text-emerald-400",
+  },
+  order_rejected: {
+    icon: XCircle,
+    bg: "bg-destructive/10",
+    fg: "text-destructive",
+  },
+  order_shipped: {
+    icon: Truck,
+    bg: "bg-sky-500/10",
+    fg: "text-sky-600 dark:text-sky-400",
+  },
+  order_delivered: {
+    icon: PackageCheck,
+    bg: "bg-primary/10",
+    fg: "text-primary",
+  },
+};
+
+const DEFAULT_STYLE: TypeStyle = {
+  icon: Package,
+  bg: "bg-muted",
+  fg: "text-muted-foreground",
+};
+
+const styleFor = (type: string): TypeStyle => TYPE_STYLES[type] ?? DEFAULT_STYLE;
 
 const NotificationsBell = () => {
   const { user } = useAuth();
@@ -127,6 +169,7 @@ const NotificationsBell = () => {
           ) : (
             <ul className="divide-y">
               {items.map((n) => {
+                const { icon: Icon, bg, fg } = styleFor(n.type);
                 const content = (
                   <div
                     className={cn(
@@ -134,8 +177,14 @@ const NotificationsBell = () => {
                       !n.read && "bg-accent/30",
                     )}
                   >
-                    <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-                      <Package className="h-4 w-4" />
+                    <div
+                      className={cn(
+                        "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
+                        bg,
+                        fg,
+                      )}
+                    >
+                      <Icon className="h-4 w-4" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-2">

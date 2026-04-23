@@ -21,6 +21,11 @@ import ArtistProducts from "./pages/artist/ArtistProducts";
 import ArtistOrders from "./pages/artist/ArtistOrders";
 import ArtistAnalytics from "./pages/artist/ArtistAnalytics";
 import ArtistProfile from "./pages/artist/ArtistProfile";
+import AdminOverview from "./pages/admin/AdminOverview";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminArtists from "./pages/admin/AdminArtists";
+import AdminProducts from "./pages/admin/AdminProducts";
+import AdminOrders from "./pages/admin/AdminOrders";
 
 const queryClient = new QueryClient();
 
@@ -47,6 +52,11 @@ const App = () => (
             <Route path="/artist/orders" element={<ArtistOrders />} />
             <Route path="/artist/analytics" element={<ArtistAnalytics />} />
             <Route path="/artist/profile" element={<ArtistProfile />} />
+            <Route path="/admin" element={<AdminOverview />} />
+            <Route path="/admin/users" element={<AdminUsers />} />
+            <Route path="/admin/artists" element={<AdminArtists />} />
+            <Route path="/admin/products" element={<AdminProducts />} />
+            <Route path="/admin/orders" element={<AdminOrders />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           <Chatbot />

@@ -92,7 +92,7 @@ const AdminProducts = () => {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
-                      <Button size="sm" variant="outline" onClick={() => toggleActive(p.id, p.is_active)}>
+                      <Button size="sm" variant="outline" onClick={() => toggleActive(p.id, p.is_active, p.title)}>
                         {p.is_active ? "Hide" : "Activate"}
                       </Button>
                       <AlertDialog>
@@ -106,7 +106,7 @@ const AdminProducts = () => {
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => remove(p.id)}>Delete</AlertDialogAction>
+                            <AlertDialogAction onClick={() => remove(p.id, p.title)}>Delete</AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>

@@ -15,7 +15,7 @@ export async function logAdminAction(params: {
 }) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
-  await supabase.from("admin_audit_log").insert({
+  await (supabase.from("admin_audit_log") as any).insert({
     actor_id: user.id,
     action: params.action,
     target_type: params.target_type,

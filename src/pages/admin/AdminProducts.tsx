@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { logAdminAction } from "@/lib/adminAudit";
 import { Trash2 } from "lucide-react";
 
 const AdminProducts = () => {
@@ -28,16 +29,34 @@ const AdminProducts = () => {
   };
   useEffect(() => { load(); }, []);
 
-  const toggleActive = async (id: string, active: boolean) => {
+  const toggleActive = async (id: string, active: boolean, title: string) => {
     const { error } = await supabase.from("products").update({ is_active: !active }).eq("id", id);
     if (error) toast({ title: "Failed", description: error.message, variant: "destructive" });
-    else { toast({ title: !active ? "Product activated" : "Product hidden" }); load(); }
+    else {
+      await logAdminAction({
+        action: !active ? "product_activated" : "product_hidden",
+        target_type: "product",
+        target_id: id,
+        details: { title },
+      });
+      toast({ title: !active ? "Product activated" : "Product hidden" });
+      load();
+    }
   };
 
-  const remove = async (id: string) => {
+  const remove = async (id: string, title: string) => {
     const { error } = await supabase.from("products").delete().eq("id", id);
     if (error) toast({ title: "Failed", description: error.message, variant: "destructive" });
-    else { toast({ title: "Product deleted" }); load(); }
+    else {
+      await logAdminAction({
+        action: "product_deleted",
+        target_type: "product",
+        target_id: id,
+        details: { title },
+      });
+      toast({ title: "Product deleted" });
+      load();
+    }
   };
 
   return (

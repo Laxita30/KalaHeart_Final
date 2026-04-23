@@ -38,8 +38,7 @@ const AdminAuditLog = () => {
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase
-        .from("admin_audit_log")
+      const { data } = await (supabase.from("admin_audit_log") as any)
         .select("*")
         .order("created_at", { ascending: false })
         .limit(200);

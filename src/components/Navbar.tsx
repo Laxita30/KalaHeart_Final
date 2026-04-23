@@ -1,14 +1,16 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Heart, ShoppingCart, User, LogOut, Store } from "lucide-react";
+import { Heart, ShoppingCart, User, LogOut, Store, Shield } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 import NotificationsBell from "@/components/NotificationsBell";
 
 const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const { isAdmin } = useIsAdmin();
   const isLanding = location.pathname === "/";
 
   const handleSignOut = async () => {
@@ -42,6 +44,11 @@ const Navbar = () => {
             {user && (
               <Link to="/artist" className="hidden sm:flex items-center gap-1.5 text-sm font-medium text-foreground/70 hover:text-primary transition-colors">
                 <Store className="h-4 w-4" /> Sell
+              </Link>
+            )}
+            {isAdmin && (
+              <Link to="/admin" className="hidden sm:flex items-center gap-1.5 text-sm font-medium text-foreground/70 hover:text-primary transition-colors">
+                <Shield className="h-4 w-4" /> Admin
               </Link>
             )}
             {user && <NotificationsBell />}

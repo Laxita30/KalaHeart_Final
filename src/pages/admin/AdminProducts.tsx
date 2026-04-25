@@ -37,14 +37,18 @@ const AdminProducts = () => {
         action: !active ? "product_activated" : "product_hidden",
         target_type: "product",
         target_id: id,
-        details: { title },
+        details: {
+          title,
+          before: { is_active: active },
+          after: { is_active: !active },
+        },
       });
       toast({ title: !active ? "Product activated" : "Product hidden" });
       load();
     }
   };
 
-  const remove = async (id: string, title: string) => {
+  const remove = async (id: string, title: string, isActive: boolean) => {
     const { error } = await supabase.from("products").delete().eq("id", id);
     if (error) toast({ title: "Failed", description: error.message, variant: "destructive" });
     else {
@@ -52,7 +56,11 @@ const AdminProducts = () => {
         action: "product_deleted",
         target_type: "product",
         target_id: id,
-        details: { title },
+        details: {
+          title,
+          before: { exists: true, is_active: isActive },
+          after: { exists: false },
+        },
       });
       toast({ title: "Product deleted" });
       load();
@@ -106,7 +114,7 @@ const AdminProducts = () => {
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => remove(p.id, p.title)}>Delete</AlertDialogAction>
+                            <AlertDialogAction onClick={() => remove(p.id, p.title, p.is_active)}>Delete</AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>

@@ -31,7 +31,11 @@ const AdminArtists = () => {
         action: !approved ? "artist_approved" : "artist_revoked",
         target_type: "artist",
         target_id: id,
-        details: { shop_name },
+        details: {
+          shop_name,
+          before: { approved },
+          after: { approved: !approved },
+        },
       });
       toast({ title: !approved ? "Artist approved" : "Approval revoked" });
       load();

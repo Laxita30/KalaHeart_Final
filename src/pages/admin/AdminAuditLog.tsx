@@ -9,7 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { supabase } from "@/integrations/supabase/client";
 import { format, isWithinInterval, startOfDay, endOfDay } from "date-fns";
-import { CalendarIcon, Search, X } from "lucide-react";
+import { CalendarIcon, Search, X, ArrowRight } from "lucide-react";
 
 type Entry = {
   id: string;
@@ -38,6 +38,64 @@ const ACTION_LABEL: Record<string, string> = {
 };
 
 const ALL_ACTIONS = Object.keys(ACTION_LABEL);
+
+const formatValue = (v: unknown): string => {
+  if (v === null || v === undefined) return "—";
+  if (typeof v === "boolean") return v ? "true" : "false";
+  return String(v);
+};
+
+const FIELD_LABEL: Record<string, string> = {
+  approved: "Approved",
+  is_active: "Active",
+  exists: "Exists",
+};
+
+const DetailsCell = ({ details }: { details: Record<string, unknown> | null }) => {
+  if (!details) return <span className="text-muted-foreground">—</span>;
+  const before = (details.before ?? null) as Record<string, unknown> | null;
+  const after = (details.after ?? null) as Record<string, unknown> | null;
+  const name = (details.title ?? details.shop_name ?? null) as string | null;
+
+  if (!before && !after) {
+    return (
+      <span className="text-xs text-muted-foreground">
+        {name ?? JSON.stringify(details)}
+      </span>
+    );
+  }
+
+  const keys = Array.from(
+    new Set([...(before ? Object.keys(before) : []), ...(after ? Object.keys(after) : [])])
+  );
+
+  return (
+    <div className="space-y-1">
+      {name && <div className="text-xs font-medium text-foreground">{name}</div>}
+      {keys.map((k) => {
+        const b = before?.[k];
+        const a = after?.[k];
+        const changed = JSON.stringify(b) !== JSON.stringify(a);
+        return (
+          <div key={k} className="flex items-center gap-1.5 text-xs">
+            <span className="text-muted-foreground">{FIELD_LABEL[k] ?? k}:</span>
+            <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[11px]">
+              {formatValue(b)}
+            </code>
+            <ArrowRight className="h-3 w-3 text-muted-foreground" />
+            <code
+              className={`rounded px-1.5 py-0.5 font-mono text-[11px] ${
+                changed ? "bg-primary/10 text-primary" : "bg-muted"
+              }`}
+            >
+              {formatValue(a)}
+            </code>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
 
 const AdminAuditLog = () => {
   const [entries, setEntries] = useState<Entry[]>([]);
@@ -213,8 +271,8 @@ const AdminAuditLog = () => {
                     <span className="text-xs text-muted-foreground">{e.target_type}</span>{" "}
                     <span className="font-mono text-xs">#{(e.target_id ?? "").slice(0, 8)}</span>
                   </TableCell>
-                  <TableCell className="text-xs text-muted-foreground max-w-xs truncate">
-                    {e.details ? (typeof e.details === "object" ? JSON.stringify(e.details) : String(e.details)) : "—"}
+                  <TableCell className="max-w-md">
+                    <DetailsCell details={e.details} />
                   </TableCell>
                 </TableRow>
               ))}

@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
 import ArtistCard from "@/components/ArtistCard";
+import RecommendedProducts from "@/components/RecommendedProducts";
 import heroArt from "@/assets/hero-art.jpg";
 import visionArt from "@/assets/vision-artistry.jpg";
 import { products, artists } from "@/lib/data";
@@ -81,6 +82,11 @@ const Index = () => (
           <Button variant="outline" size="lg">Browse All Products</Button>
         </Link>
       </div>
+    </section>
+
+    {/* AI Personalized Recommendations */}
+    <section className="container pb-16">
+      <RecommendedProducts limit={6} title="Picked for you" />
     </section>
 
     {/* Artisans */}

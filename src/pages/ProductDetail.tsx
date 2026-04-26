@@ -1,13 +1,28 @@
+import { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Heart, ShoppingCart, Star, User, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import RecommendedProducts from "@/components/RecommendedProducts";
+import { supabase } from "@/integrations/supabase/client";
 import { products, artists } from "@/lib/data";
 
 const ProductDetail = () => {
   const { id } = useParams();
   const product = products.find((p) => p.id === id);
+
+  // Track view (real DB product ids only — uuid format)
+  useEffect(() => {
+    if (!id) return;
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    if (!isUuid) return;
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      await supabase.from("product_views").insert({ user_id: user.id, product_id: id });
+    })();
+  }, [id]);
 
   if (!product) {
     return (
@@ -92,6 +107,11 @@ const ProductDetail = () => {
             </div>
           </div>
         )}
+
+        {/* AI Recommendations */}
+        <div className="mt-16">
+          <RecommendedProducts currentProductId={id} limit={6} title="You might also love" />
+        </div>
       </div>
       <Footer />
     </div>

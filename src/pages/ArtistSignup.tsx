@@ -606,4 +606,58 @@ const PhotoCard = ({
   );
 };
 
+const ProductPhotoGrid = ({
+  files, onChange,
+}: {
+  files: File[];
+  onChange: (files: File[]) => void;
+}) => {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const previews = useMemo(
+    () => files.map((f) => ({ name: f.name, url: URL.createObjectURL(f) })),
+    [files],
+  );
+  return (
+    <div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+        {previews.map((p, i) => (
+          <div key={i} className="relative aspect-square rounded-lg overflow-hidden border bg-muted">
+            <img src={p.url} alt={p.name} className="w-full h-full object-cover" />
+            <button
+              type="button"
+              onClick={() => onChange(files.filter((_, idx) => idx !== i))}
+              className="absolute top-1.5 right-1.5 h-7 w-7 rounded-full bg-card/90 text-destructive flex items-center justify-center hover:bg-card"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          className="aspect-square rounded-lg border-2 border-dashed border-border hover:border-primary hover:bg-primary/5 transition-colors flex flex-col items-center justify-center text-muted-foreground hover:text-primary"
+        >
+          <Plus className="h-6 w-6 mb-1" />
+          <span className="text-xs font-medium">Add photo</span>
+        </button>
+      </div>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        className="hidden"
+        onChange={(e) => {
+          const newFiles = Array.from(e.target.files ?? []);
+          onChange([...files, ...newFiles]);
+          if (inputRef.current) inputRef.current.value = "";
+        }}
+      />
+      {files.length > 0 && (
+        <p className="text-xs text-muted-foreground mt-2">{files.length} photo{files.length > 1 ? "s" : ""} selected</p>
+      )}
+    </div>
+  );
+};
+
 export default ArtistSignup;

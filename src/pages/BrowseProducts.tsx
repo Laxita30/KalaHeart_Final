@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Search, Heart, ShoppingCart, Star, Info } from "lucide-react";
+import { Search, Heart, ShoppingCart, Star, Info, Layers, Ruler, Truck } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
@@ -156,6 +156,26 @@ const BrowseProducts = () => {
                         <Star className="h-3.5 w-3.5 fill-current text-star" />
                         <span className="text-xs text-muted-foreground">{Number(p.rating).toFixed(1)}</span>
                       </div>
+                      {(p.materials || p.dimensions) && (
+                        <div className="mt-3 pt-3 border-t space-y-1.5">
+                          {p.materials && (
+                            <div className="flex items-start gap-1.5 text-[11px] text-muted-foreground">
+                              <Layers className="h-3 w-3 mt-0.5 shrink-0 text-primary" />
+                              <span className="line-clamp-1"><span className="font-medium text-foreground">Materials:</span> {p.materials}</span>
+                            </div>
+                          )}
+                          {p.dimensions && (
+                            <div className="flex items-start gap-1.5 text-[11px] text-muted-foreground">
+                              <Ruler className="h-3 w-3 mt-0.5 shrink-0 text-primary" />
+                              <span className="line-clamp-1"><span className="font-medium text-foreground">Size:</span> {p.dimensions}</span>
+                            </div>
+                          )}
+                          <div className="flex items-start gap-1.5 text-[11px] text-muted-foreground">
+                            <Truck className="h-3 w-3 mt-0.5 shrink-0 text-primary" />
+                            <span className="line-clamp-1"><span className="font-medium text-foreground">Shipping:</span> 3–7 business days</span>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </Link>
                 ))}

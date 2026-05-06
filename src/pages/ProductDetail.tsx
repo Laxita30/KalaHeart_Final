@@ -183,7 +183,7 @@ const ProductDetail = () => {
             <h1 className="text-3xl font-display font-bold mt-3 leading-tight">{product.title}</h1>
 
             <p className="text-foreground/80 mt-4 leading-relaxed whitespace-pre-line">
-              {product.description || "No description provided."}
+              {product.description}
             </p>
 
             <p className="text-3xl font-bold text-price mt-5">

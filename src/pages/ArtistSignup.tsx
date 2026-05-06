@@ -181,6 +181,7 @@ const ArtistSignup = () => {
         last_name: lastName,
         phone,
         address,
+        role: "artist",
       });
       if (signErr) throw signErr;
 

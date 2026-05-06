@@ -181,6 +181,7 @@ const ArtistSignup = () => {
         last_name: lastName,
         phone,
         address,
+        role: "artist",
       });
       if (signErr) throw signErr;
 
@@ -213,13 +214,6 @@ const ArtistSignup = () => {
         submitted_at: new Date().toISOString(),
       } as any).select().single();
       if (insertErr) throw insertErr;
-
-      // Treat this account as an artist, not a regular user.
-      // Replace the auto-assigned 'user' role with 'artist'.
-      await supabase.from("user_roles").delete().eq("user_id", user.id).eq("role", "user");
-      await supabase
-        .from("user_roles")
-        .upsert({ user_id: user.id, role: "artist" }, { onConflict: "user_id,role" });
 
       // Upload product photos and create draft products
       const productImageUrls: string[] = [];

@@ -114,7 +114,7 @@ export async function getProducts(filters?: { category?: string; minPrice?: numb
 export async function getProduct(id: string) {
   const { data, error } = await supabase
     .from("products")
-    .select("*, artists(*, profiles(first_name, last_name, avatar_url))")
+    .select("*, artists(*)")
     .eq("id", id)
     .maybeSingle();
   if (error) throw error;

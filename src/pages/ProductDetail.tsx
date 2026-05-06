@@ -136,9 +136,9 @@ const ProductDetail = () => {
           <ArrowLeft className="h-4 w-4" /> Back to browse
         </Link>
 
-        <div className="grid md:grid-cols-2 gap-10">
-          <div className="space-y-3">
-            <div className="rounded-xl overflow-hidden border bg-card">
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="rounded-2xl border bg-card p-5 space-y-4 shadow-sm">
+            <div className="rounded-xl overflow-hidden bg-muted/30">
               <img
                 src={images[activeImage]}
                 alt={product.title}
@@ -146,7 +146,7 @@ const ProductDetail = () => {
               />
             </div>
             {images.length > 1 && (
-              <div className="grid grid-cols-5 gap-2">
+              <div className="grid grid-cols-4 gap-3">
                 {images.map((src, i) => (
                   <button
                     key={i}
@@ -163,7 +163,7 @@ const ProductDetail = () => {
             )}
           </div>
 
-          <div>
+          <div className="rounded-2xl border bg-card p-6 shadow-sm">
             <div className="flex flex-wrap items-center gap-2">
               {product.category && (
                 <Badge variant="secondary" className="gap-1">
@@ -180,9 +180,18 @@ const ProductDetail = () => {
               )}
             </div>
 
-            <h1 className="text-3xl font-display font-bold mt-3">{product.title}</h1>
+            <h1 className="text-3xl font-display font-bold mt-3 leading-tight">{product.title}</h1>
 
-            <div className="flex items-center gap-2 mt-2">
+            <p className="text-foreground/80 mt-4 leading-relaxed whitespace-pre-line">
+              {product.description || "No description provided."}
+            </p>
+
+            <p className="text-3xl font-bold text-price mt-5">
+              {product.currency}
+              {Number(product.price).toFixed(2)}
+            </p>
+
+            <div className="flex items-center gap-2 mt-3">
               <div className="flex">
                 {[...Array(5)].map((_, i) => (
                   <Star
@@ -194,18 +203,9 @@ const ProductDetail = () => {
                 ))}
               </div>
               <span className="text-sm text-muted-foreground">
-                {Number(product.rating || 0).toFixed(1)} · {product.review_count} reviews
+                ({product.review_count} reviews)
               </span>
             </div>
-
-            <p className="text-3xl font-bold text-price mt-5">
-              {product.currency}
-              {Number(product.price).toFixed(2)}
-            </p>
-
-            <p className="text-foreground/80 mt-5 leading-relaxed whitespace-pre-line">
-              {product.description || "No description provided."}
-            </p>
 
             {(product.materials || product.dimensions || product.care_instructions) && (
               <div className="mt-6 rounded-lg border bg-card/50 divide-y">

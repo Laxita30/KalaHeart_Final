@@ -10,9 +10,9 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { title, category, materials, dimensions, currentDescription } = await req.json();
-    if (!title && !category && !currentDescription) {
-      return new Response(JSON.stringify({ error: "Provide at least a title or category" }), {
+    const { title, category, materials, dimensions, currentDescription, voiceTranscript, language } = await req.json();
+    if (!title && !category && !currentDescription && !voiceTranscript) {
+      return new Response(JSON.stringify({ error: "Provide at least a title, category or voice description" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -21,8 +21,10 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
+    const lang = language || "English";
     const systemPrompt = `You are a marketplace copywriter and pricing assistant for KalaHeart, a marketplace for handmade artisan goods.
 Generate a compelling product description and a fair suggested price in USD for a handmade product.
+Write the description and hashtags in ${lang}.
 
 Guidelines:
 - Description: 80-140 words, warm and evocative, highlights craft, materials and use
@@ -34,7 +36,8 @@ Guidelines:
 Category: ${category || "(none)"}
 Materials: ${materials || "(none)"}
 Dimensions: ${dimensions || "(none)"}
-Current description (may be empty): ${currentDescription || "(none)"}`;
+Current description (may be empty): ${currentDescription || "(none)"}
+Artisan's voice notes (may include filler words, mixed languages): ${voiceTranscript || "(none)"}`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

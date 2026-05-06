@@ -200,7 +200,9 @@ export type Database = {
       }
       chat_messages: {
         Row: {
-          content: string
+          attachment_type: string | null
+          attachment_url: string | null
+          content: string | null
           created_at: string
           id: string
           read_at: string | null
@@ -208,7 +210,9 @@ export type Database = {
           thread_id: string
         }
         Insert: {
-          content: string
+          attachment_type?: string | null
+          attachment_url?: string | null
+          content?: string | null
           created_at?: string
           id?: string
           read_at?: string | null
@@ -216,7 +220,9 @@ export type Database = {
           thread_id: string
         }
         Update: {
-          content?: string
+          attachment_type?: string | null
+          attachment_url?: string | null
+          content?: string | null
           created_at?: string
           id?: string
           read_at?: string | null

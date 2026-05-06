@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Plus, Pencil, Trash2, Upload, Loader2, Sparkles, Mic, MicOff } from "lucide-react";
+import { Plus, Pencil, Trash2, Upload, Loader2, Sparkles, Mic, MicOff, ExternalLink } from "lucide-react";
 import ArtistDashboardLayout from "@/components/ArtistDashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { createProduct, deleteProduct, getMyProducts, updateProduct, getMyArtist } from "@/lib/api";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -227,7 +227,15 @@ const ArtistProducts = () => {
             <TableBody>
               {items.map((p) => (
                 <TableRow key={p.id}>
-                  <TableCell className="font-medium">{p.title}</TableCell>
+                  <TableCell className="font-medium">
+                    <Link
+                      to={`/product/${p.id}`}
+                      className="inline-flex items-center gap-1 hover:text-primary hover:underline"
+                    >
+                      {p.title}
+                      <ExternalLink className="h-3 w-3 opacity-60" />
+                    </Link>
+                  </TableCell>
                   <TableCell>{p.category}</TableCell>
                   <TableCell>${Number(p.price).toFixed(2)}</TableCell>
                   <TableCell>{p.stock ?? 0}</TableCell>

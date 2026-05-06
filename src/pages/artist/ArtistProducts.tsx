@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Plus, Pencil, Trash2, Upload, Loader2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Upload, Loader2, Sparkles } from "lucide-react";
 import ArtistDashboardLayout from "@/components/ArtistDashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -34,6 +34,9 @@ const ArtistProducts = () => {
   const [form, setForm] = useState(empty);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [suggesting, setSuggesting] = useState(false);
+  const [suggestedPrice, setSuggestedPrice] = useState<number | null>(null);
+  const [priceReasoning, setPriceReasoning] = useState<string>("");
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -44,7 +47,10 @@ const ArtistProducts = () => {
   };
   useEffect(() => { load(); }, []);
 
-  const openNew = () => { setEditing(null); setForm(empty); setOpen(true); };
+  const openNew = () => {
+    setEditing(null); setForm(empty); setOpen(true);
+    setSuggestedPrice(null); setPriceReasoning("");
+  };
   const openEdit = (p: Product) => {
     setEditing(p);
     setForm({
@@ -59,6 +65,40 @@ const ArtistProducts = () => {
       care_instructions: (p as any).care_instructions ?? "",
     });
     setOpen(true);
+    setSuggestedPrice(null); setPriceReasoning("");
+  };
+
+  const suggestWithAI = async () => {
+    if (!form.title && !form.category) {
+      toast({ title: "Add a title or category first", variant: "destructive" });
+      return;
+    }
+    setSuggesting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("suggest-product-details", {
+        body: {
+          title: form.title,
+          category: form.category,
+          materials: form.materials,
+          dimensions: form.dimensions,
+          currentDescription: form.description,
+        },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      const tags = (data.hashtags ?? []).map((t: string) => (t.startsWith("#") ? t : `#${t}`)).join(" ");
+      setForm({
+        ...form,
+        description: `${data.description}\n\n${tags}`.trim(),
+      });
+      setSuggestedPrice(Number(data.suggestedPrice));
+      setPriceReasoning(data.priceReasoning ?? "");
+      toast({ title: "AI suggestion ready", description: "Review and apply the suggested price below." });
+    } catch (e: any) {
+      toast({ title: "AI suggestion failed", description: e.message, variant: "destructive" });
+    } finally {
+      setSuggesting(false);
+    }
   };
 
   const save = async () => {
@@ -170,10 +210,37 @@ const ArtistProducts = () => {
           <div className="space-y-3">
             <Input placeholder="Title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
             <Textarea placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={suggestWithAI}
+              disabled={suggesting}
+              className="w-full"
+            >
+              {suggesting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+              {suggesting ? "Generating…" : "Suggest description, hashtags & price with AI"}
+            </Button>
             <div className="grid grid-cols-2 gap-3">
               <Input placeholder="Price" type="number" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
               <Input placeholder="Stock" type="number" value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} />
             </div>
+            {suggestedPrice !== null && (
+              <div className="flex items-start justify-between gap-2 rounded-md border border-dashed p-2 text-sm">
+                <div>
+                  <div className="font-medium">Suggested price: ${suggestedPrice.toFixed(2)}</div>
+                  {priceReasoning && <div className="text-xs text-muted-foreground">{priceReasoning}</div>}
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => setForm({ ...form, price: suggestedPrice.toFixed(2) })}
+                >
+                  Apply
+                </Button>
+              </div>
+            )}
             <Input placeholder="Category (e.g. Pottery)" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
             <Input
               placeholder="Materials (e.g. Terracotta clay, natural dyes)"

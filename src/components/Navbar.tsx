@@ -5,12 +5,15 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import NotificationsBell from "@/components/NotificationsBell";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { useTranslation } from "react-i18next";
 
 const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { isAdmin } = useIsAdmin();
+  const { t } = useTranslation();
   const isLanding = location.pathname === "/";
 
   const handleSignOut = async () => {
@@ -29,26 +32,28 @@ const Navbar = () => {
         {isLanding && !user ? (
           <>
             <div className="hidden md:flex items-center gap-8 text-sm font-medium">
-              <a href="#mission" className="text-foreground/70 hover:text-foreground transition-colors">Our Mission</a>
-              <a href="#products" className="text-foreground/70 hover:text-foreground transition-colors">Products</a>
-              <a href="#artisans" className="text-foreground/70 hover:text-foreground transition-colors">Artists</a>
+              <a href="#mission" className="text-foreground/70 hover:text-foreground transition-colors">{t("nav.mission")}</a>
+              <a href="#products" className="text-foreground/70 hover:text-foreground transition-colors">{t("nav.products")}</a>
+              <a href="#artisans" className="text-foreground/70 hover:text-foreground transition-colors">{t("nav.artists")}</a>
             </div>
             <div className="flex items-center gap-3">
+              <LanguageSwitcher />
               <Link to="/login">
-                <Button>Login</Button>
+                <Button>{t("nav.login")}</Button>
               </Link>
             </div>
           </>
         ) : (
           <div className="flex items-center gap-4">
+            <LanguageSwitcher />
             {user && (
               <Link to="/artist" className="hidden sm:flex items-center gap-1.5 text-sm font-medium text-foreground/70 hover:text-primary transition-colors">
-                <Store className="h-4 w-4" /> Sell
+                <Store className="h-4 w-4" /> {t("nav.sell")}
               </Link>
             )}
             {isAdmin && (
               <Link to="/admin" className="hidden sm:flex items-center gap-1.5 text-sm font-medium text-foreground/70 hover:text-primary transition-colors">
-                <Shield className="h-4 w-4" /> Admin
+                <Shield className="h-4 w-4" /> {t("nav.admin")}
               </Link>
             )}
             {user && <NotificationsBell />}

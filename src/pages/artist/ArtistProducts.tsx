@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { Plus, Pencil, Trash2, Upload, Loader2, Sparkles } from "lucide-react";
+import { Plus, Pencil, Trash2, Upload, Loader2, Sparkles, Mic, MicOff } from "lucide-react";
 import ArtistDashboardLayout from "@/components/ArtistDashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +13,8 @@ import { useToast } from "@/hooks/use-toast";
 import { createProduct, deleteProduct, getMyProducts, updateProduct, getMyArtist } from "@/lib/api";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 
 type Product = Awaited<ReturnType<typeof getMyProducts>>[number];
 
@@ -27,6 +30,12 @@ const empty = {
   care_instructions: "",
 };
 
+const STT_LANG: Record<string, string> = {
+  en: "en-IN", hi: "hi-IN", bn: "bn-IN", ta: "ta-IN", te: "te-IN", mr: "mr-IN",
+  gu: "gu-IN", kn: "kn-IN", ml: "ml-IN", pa: "pa-IN", or: "or-IN", as: "as-IN",
+  ur: "ur-IN", ne: "ne-NP",
+};
+
 const ArtistProducts = () => {
   const [items, setItems] = useState<Product[]>([]);
   const [open, setOpen] = useState(false);
@@ -39,6 +48,11 @@ const ArtistProducts = () => {
   const [priceReasoning, setPriceReasoning] = useState<string>("");
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
+
+  const sttLang = STT_LANG[i18n.language.split("-")[0]] || "en-IN";
+  const { supported: sttSupported, listening, transcript, start: startMic, stop: stopMic, reset: resetMic } =
+    useSpeechRecognition(sttLang);
 
   const load = async () => {
     const artist = await getMyArtist();
@@ -49,7 +63,7 @@ const ArtistProducts = () => {
 
   const openNew = () => {
     setEditing(null); setForm(empty); setOpen(true);
-    setSuggestedPrice(null); setPriceReasoning("");
+    setSuggestedPrice(null); setPriceReasoning(""); resetMic();
   };
   const openEdit = (p: Product) => {
     setEditing(p);
@@ -65,12 +79,12 @@ const ArtistProducts = () => {
       care_instructions: (p as any).care_instructions ?? "",
     });
     setOpen(true);
-    setSuggestedPrice(null); setPriceReasoning("");
+    setSuggestedPrice(null); setPriceReasoning(""); resetMic();
   };
 
-  const suggestWithAI = async () => {
-    if (!form.title && !form.category) {
-      toast({ title: "Add a title or category first", variant: "destructive" });
+  const suggestWithAI = async (extra?: { voiceTranscript?: string }) => {
+    if (!form.title && !form.category && !extra?.voiceTranscript) {
+      toast({ title: "Add a title, category or voice description first", variant: "destructive" });
       return;
     }
     setSuggesting(true);
@@ -82,15 +96,14 @@ const ArtistProducts = () => {
           materials: form.materials,
           dimensions: form.dimensions,
           currentDescription: form.description,
+          voiceTranscript: extra?.voiceTranscript ?? "",
+          language: i18n.language,
         },
       });
       if (error) throw error;
       if ((data as any)?.error) throw new Error((data as any).error);
-      const tags = (data.hashtags ?? []).map((t: string) => (t.startsWith("#") ? t : `#${t}`)).join(" ");
-      setForm({
-        ...form,
-        description: `${data.description}\n\n${tags}`.trim(),
-      });
+      const tags = (data.hashtags ?? []).map((h: string) => (h.startsWith("#") ? h : `#${h}`)).join(" ");
+      setForm((f) => ({ ...f, description: `${data.description}\n\n${tags}`.trim() }));
       setSuggestedPrice(Number(data.suggestedPrice));
       setPriceReasoning(data.priceReasoning ?? "");
       toast({ title: "AI suggestion ready", description: "Review and apply the suggested price below." });
@@ -101,9 +114,18 @@ const ArtistProducts = () => {
     }
   };
 
+  const generateFromVoice = async () => {
+    if (!transcript.trim()) {
+      toast({ title: "Please record a voice description first", variant: "destructive" });
+      return;
+    }
+    await suggestWithAI({ voiceTranscript: transcript });
+  };
+
   const save = async () => {
-    if (!form.title || !form.price || !form.category) {
-      toast({ title: "Title, price and category required", variant: "destructive" });
+    const imagesArr = form.images.split(",").map((s) => s.trim()).filter(Boolean);
+    if (!form.title || !form.price || !form.category || !form.description || !form.stock || imagesArr.length === 0) {
+      toast({ title: "Please fill all required (*) fields and add at least one photo", variant: "destructive" });
       return;
     }
     setSaving(true);
@@ -114,7 +136,7 @@ const ArtistProducts = () => {
         price: Number(form.price),
         category: form.category,
         stock: Number(form.stock || 0),
-        images: form.images.split(",").map((s) => s.trim()).filter(Boolean),
+        images: imagesArr,
         materials: form.materials,
         dimensions: form.dimensions,
         care_instructions: form.care_instructions,
@@ -160,6 +182,8 @@ const ArtistProducts = () => {
     catch (e: any) { toast({ title: "Error", description: e.message, variant: "destructive" }); }
   };
 
+  const Req = () => <span className="text-destructive">*</span>;
+
   return (
     <ArtistDashboardLayout title="Products">
       <Card>
@@ -203,27 +227,64 @@ const ArtistProducts = () => {
       </Card>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editing ? "Edit product" : "New product"}</DialogTitle>
+            <DialogTitle>{editing ? t("product.editTitle") : t("product.newTitle")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
-            <Input placeholder="Title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
-            <Textarea placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+            <div>
+              <Label className="text-xs">{t("product.title")} <Req /></Label>
+              <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+            </div>
+            <div>
+              <Label className="text-xs">{t("product.description")} <Req /></Label>
+              <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+            </div>
+
+            <div className="rounded-md border border-dashed p-3 space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs font-medium">{t("product.voiceDescribe")}</span>
+                {sttSupported ? (
+                  <Button
+                    type="button" size="sm"
+                    variant={listening ? "destructive" : "outline"}
+                    onClick={listening ? stopMic : startMic}
+                  >
+                    {listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                    {listening ? t("product.listening") : t("product.voiceDescribe")}
+                  </Button>
+                ) : (
+                  <span className="text-xs text-muted-foreground">Voice not supported here</span>
+                )}
+              </div>
+              {transcript && <p className="text-xs text-muted-foreground italic">"{transcript}"</p>}
+              <Button
+                type="button" size="sm" variant="secondary" className="w-full"
+                disabled={suggesting || !transcript.trim()}
+                onClick={generateFromVoice}
+              >
+                {suggesting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                {t("product.generateFromVoice")}
+              </Button>
+            </div>
+
             <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={suggestWithAI}
-              disabled={suggesting}
-              className="w-full"
+              type="button" variant="outline" size="sm"
+              onClick={() => suggestWithAI()} disabled={suggesting} className="w-full"
             >
               {suggesting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-              {suggesting ? "Generating…" : "Suggest description, hashtags & price with AI"}
+              {suggesting ? t("product.generating") : t("product.suggestAi")}
             </Button>
+
             <div className="grid grid-cols-2 gap-3">
-              <Input placeholder="Price" type="number" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
-              <Input placeholder="Stock" type="number" value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} />
+              <div>
+                <Label className="text-xs">{t("product.price")} <Req /></Label>
+                <Input type="number" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
+              </div>
+              <div>
+                <Label className="text-xs">{t("product.stock")} <Req /></Label>
+                <Input type="number" value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} />
+              </div>
             </div>
             {suggestedPrice !== null && (
               <div className="flex items-start justify-between gap-2 rounded-md border border-dashed p-2 text-sm">
@@ -231,56 +292,39 @@ const ArtistProducts = () => {
                   <div className="font-medium">Suggested price: ${suggestedPrice.toFixed(2)}</div>
                   {priceReasoning && <div className="text-xs text-muted-foreground">{priceReasoning}</div>}
                 </div>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="secondary"
-                  onClick={() => setForm({ ...form, price: suggestedPrice.toFixed(2) })}
-                >
+                <Button type="button" size="sm" variant="secondary"
+                  onClick={() => setForm({ ...form, price: suggestedPrice.toFixed(2) })}>
                   Apply
                 </Button>
               </div>
             )}
-            <Input placeholder="Category (e.g. Pottery)" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
-            <Input
-              placeholder="Materials (e.g. Terracotta clay, natural dyes)"
-              value={form.materials}
-              onChange={(e) => setForm({ ...form, materials: e.target.value })}
-            />
-            <Input
-              placeholder='Dimensions (e.g. 12" H x 8" W x 8" D)'
-              value={form.dimensions}
-              onChange={(e) => setForm({ ...form, dimensions: e.target.value })}
-            />
-            <Textarea
-              placeholder="Care instructions (e.g. Hand wash with mild soap, avoid direct sunlight)"
-              value={form.care_instructions}
-              onChange={(e) => setForm({ ...form, care_instructions: e.target.value })}
-            />
+            <div>
+              <Label className="text-xs">{t("product.category")} <Req /></Label>
+              <Input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
+            </div>
+            <Input placeholder={t("product.materials")} value={form.materials}
+              onChange={(e) => setForm({ ...form, materials: e.target.value })} />
+            <Input placeholder={t("product.dimensions")} value={form.dimensions}
+              onChange={(e) => setForm({ ...form, dimensions: e.target.value })} />
+            <Textarea placeholder={t("product.care")} value={form.care_instructions}
+              onChange={(e) => setForm({ ...form, care_instructions: e.target.value })} />
             <div>
               <label className="flex flex-col items-center justify-center gap-1.5 border-2 border-dashed rounded-lg p-4 cursor-pointer hover:bg-muted/40 transition-colors">
                 {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Upload className="h-5 w-5 text-muted-foreground" />}
-                <span className="text-sm font-medium">{uploading ? "Uploading…" : "Upload product photos"}</span>
-                <span className="text-xs text-muted-foreground">PNG, JPG — multiple allowed</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  className="hidden"
-                  onChange={(e) => uploadPhotos(e.target.files)}
-                />
+                <span className="text-sm font-medium">
+                  {uploading ? "Uploading…" : t("product.uploadPhotos")} <Req />
+                </span>
+                <span className="text-xs text-muted-foreground">{t("product.uploadHint")}</span>
+                <input type="file" accept="image/*" multiple className="hidden"
+                  onChange={(e) => uploadPhotos(e.target.files)} />
               </label>
-              <Input
-                placeholder="Or paste image URLs (comma-separated)"
-                className="mt-2"
-                value={form.images}
-                onChange={(e) => setForm({ ...form, images: e.target.value })}
-              />
+              <Input placeholder={t("product.pasteUrls")} className="mt-2"
+                value={form.images} onChange={(e) => setForm({ ...form, images: e.target.value })} />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button onClick={save} disabled={saving}>{saving ? "Saving..." : "Save"}</Button>
+            <Button variant="outline" onClick={() => setOpen(false)}>{t("common.cancel")}</Button>
+            <Button onClick={save} disabled={saving}>{saving ? "Saving..." : t("common.save")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

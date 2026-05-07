@@ -6,6 +6,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MessageSquare, Sparkles, User as UserIcon, Bot } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import ChatThreadView from "@/components/ChatThreadView";
+import { useAuth } from "@/contexts/AuthContext";
 
 type Convo = {
   id: string;
@@ -41,6 +43,7 @@ type DmMsg = {
 };
 
 const AdminChats = () => {
+  const { user } = useAuth();
   const [convos, setConvos] = useState<Convo[]>([]);
   const [selectedConvo, setSelectedConvo] = useState<string | null>(null);
   const [aiMsgs, setAiMsgs] = useState<AiMsg[]>([]);

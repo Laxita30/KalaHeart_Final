@@ -50,8 +50,7 @@ const AdminChats = () => {
 
   const [threads, setThreads] = useState<Thread[]>([]);
   const [selectedThread, setSelectedThread] = useState<string | null>(null);
-  const [dmMsgs, setDmMsgs] = useState<DmMsg[]>([]);
-  const [nameMap, setNameMap] = useState<Record<string, string>>({});
+  const [, setNameMap] = useState<Record<string, string>>({});
 
   useEffect(() => {
     supabase
@@ -103,15 +102,6 @@ const AdminChats = () => {
       .then(({ data }) => setAiMsgs((data ?? []) as AiMsg[]));
   }, [selectedConvo]);
 
-  useEffect(() => {
-    if (!selectedThread) return;
-    supabase
-      .from("chat_messages")
-      .select("id, sender_id, content, attachment_url, attachment_type, created_at")
-      .eq("thread_id", selectedThread)
-      .order("created_at", { ascending: true })
-      .then(({ data }) => setDmMsgs((data ?? []) as DmMsg[]));
-  }, [selectedThread]);
 
   return (
     <AdminLayout title="Chat oversight">

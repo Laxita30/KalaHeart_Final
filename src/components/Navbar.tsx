@@ -46,16 +46,6 @@ const Navbar = () => {
         ) : (
           <div className="flex items-center gap-4">
             <LanguageSwitcher />
-            {user && (
-              <Link to="/artist" className={`${isLanding ? "hidden" : "hidden sm:flex"} items-center gap-1.5 text-sm font-medium text-foreground/70 hover:text-primary transition-colors`}>
-                <Store className="h-4 w-4" /> {t("nav.sell")}
-              </Link>
-            )}
-            {isAdmin && (
-              <Link to="/admin" className={`${isLanding ? "hidden" : "hidden sm:flex"} items-center gap-1.5 text-sm font-medium text-foreground/70 hover:text-primary transition-colors`}>
-                <Shield className="h-4 w-4" /> {t("nav.admin")}
-              </Link>
-            )}
             {user && <NotificationsBell />}
             {!isLanding && (
               <>

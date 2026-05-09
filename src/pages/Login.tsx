@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { resolvePostAuthPath, getRedirectParam } from "@/lib/authRedirect";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -14,8 +15,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const { signIn } = useAuth();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const redirectTo = searchParams.get("redirect");
+  const redirectTo = getRedirectParam();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -44,7 +44,7 @@ const Login = () => {
         const isAdmin = (roles ?? []).some((r: any) => r.role === "admin");
         if (isAdmin) {
           setLoading(false);
-          navigate("/admin");
+          navigate(resolvePostAuthPath("/admin"));
           return;
         }
         const { data: artist } = await supabase
@@ -54,7 +54,9 @@ const Login = () => {
           .maybeSingle();
         if (artist) {
           setLoading(false);
-          navigate((artist as any).review_status === "approved" ? "/artist" : "/artist/pending");
+          navigate(resolvePostAuthPath(
+            (artist as any).review_status === "approved" ? "/artist" : "/artist/pending",
+          ));
           return;
         }
       }
@@ -62,7 +64,7 @@ const Login = () => {
       // fall through to default
     }
     setLoading(false);
-    navigate("/browse");
+    navigate(resolvePostAuthPath("/browse"));
   };
 
   return (

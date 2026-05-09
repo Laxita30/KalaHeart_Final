@@ -31,11 +31,6 @@ const Login = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        if (redirectTo) {
-          setLoading(false);
-          navigate(redirectTo);
-          return;
-        }
         const { data: roles } = await supabase
           .from("user_roles")
           .select("role")

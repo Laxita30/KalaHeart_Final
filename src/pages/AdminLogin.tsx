@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { resolvePostAuthPath } from "@/lib/authRedirect";
 
 const AdminLogin = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -63,7 +64,7 @@ const AdminLogin = () => {
       });
       return;
     }
-    navigate("/admin");
+    navigate(resolvePostAuthPath("/admin"));
   };
 
   return (

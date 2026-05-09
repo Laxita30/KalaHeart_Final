@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { buildLoginUrl } from "@/lib/authRedirect";
 
 const RequireAuth = ({ children }: { children: ReactNode }) => {
   const { user, loading } = useAuth();
@@ -15,8 +16,7 @@ const RequireAuth = ({ children }: { children: ReactNode }) => {
   }
 
   if (!user) {
-    const redirect = encodeURIComponent(location.pathname + location.search);
-    return <Navigate to={`/login?redirect=${redirect}`} replace />;
+    return <Navigate to={buildLoginUrl(location.pathname, location.search)} replace />;
   }
 
   return <>{children}</>;

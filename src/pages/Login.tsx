@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { resolvePostAuthPath, getRedirectParam } from "@/lib/authRedirect";
+import { resolvePostAuthPath } from "@/lib/authRedirect";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -15,7 +15,6 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const { signIn } = useAuth();
   const navigate = useNavigate();
-  const redirectTo = getRedirectParam();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {

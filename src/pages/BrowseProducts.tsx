@@ -10,6 +10,7 @@ import Footer from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { getProducts, addToCart, toggleWishlist, getWishlistItems } from "@/lib/api";
+import SafeImage from "@/components/SafeImage";
 
 const CATEGORIES = ["Pottery", "Painting", "Textile", "Jewelry", "Sculpture", "Decor"];
 
@@ -131,12 +132,13 @@ const BrowseProducts = () => {
                 {filtered.map((p) => (
                   <Link key={p.id} to={`/product/${p.id}`} className="group block rounded-lg border bg-card overflow-hidden hover:shadow-lg transition-shadow">
                     <div className="aspect-square overflow-hidden relative">
-                      <img
-                        src={p.images?.[0] || "/placeholder.svg"}
+                      <SafeImage
+                        src={p.images?.[0]}
                         alt={p.title}
-                        loading="lazy"
+                        kind="product"
+                        fallbackSeed={p.id}
                         className="h-full w-full object-cover group-hover:scale-105 transition-transform"
-                       onError={(e) => { const t = e.currentTarget as HTMLImageElement; if (!t.dataset.fb) { t.dataset.fb = "1"; t.src = `https://picsum.photos/seed/${encodeURIComponent(t.alt || "art")}/600/600`; } }} />
+                      />
                       <div className="absolute top-3 right-3 flex gap-2">
                         <Button size="icon" variant="secondary" className="h-8 w-8 rounded-full" onClick={(e) => handleWishlist(e, p.id)}>
                           <Heart className={`h-4 w-4 ${wishlistIds.has(p.id) ? "fill-current text-red-500" : ""}`} />

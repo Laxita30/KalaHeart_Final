@@ -26,6 +26,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { getProduct, addToCart, toggleWishlist } from "@/lib/api";
+import SafeImage from "@/components/SafeImage";
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -139,11 +140,13 @@ const ProductDetail = () => {
         <div className="grid md:grid-cols-2 gap-6">
           <div className="rounded-2xl border bg-card p-5 space-y-4 shadow-sm">
             <div className="rounded-xl overflow-hidden bg-muted/30">
-              <img
+              <SafeImage
                 src={images[activeImage]}
                 alt={product.title}
+                kind="product"
+                fallbackSeed={`${product.id}-${activeImage}`}
                 className="w-full aspect-square object-cover"
-               onError={(e) => { const t = e.currentTarget as HTMLImageElement; if (!t.dataset.fb) { t.dataset.fb = "1"; t.src = `https://picsum.photos/seed/${encodeURIComponent(t.alt || "art")}/600/600`; } }} />
+              />
             </div>
             {images.length > 1 && (
               <div className="grid grid-cols-4 gap-3">
@@ -156,7 +159,7 @@ const ProductDetail = () => {
                       activeImage === i ? "ring-2 ring-primary" : "opacity-80 hover:opacity-100"
                     }`}
                   >
-                    <img src={src} alt={`${product.title} ${i + 1}`} className="w-full h-full object-cover"  onError={(e) => { const t = e.currentTarget as HTMLImageElement; if (!t.dataset.fb) { t.dataset.fb = "1"; t.src = `https://picsum.photos/seed/${encodeURIComponent(t.alt || "art")}/600/600`; } }} />
+                    <SafeImage src={src} alt={`${product.title} ${i + 1}`} kind="product" fallbackSeed={`${product.id}-${i}`} className="w-full h-full object-cover" />
                   </button>
                 ))}
               </div>
@@ -305,9 +308,13 @@ const ProductDetail = () => {
             <h2 className="text-xl font-display font-bold mb-4">About the Artist</h2>
             <div className="flex items-start gap-4">
               <div className="h-14 w-14 rounded-full bg-accent flex items-center justify-center shrink-0 overflow-hidden">
-                {artist.profile_photo_url ? (
-                  <img src={artist.profile_photo_url} alt={artist.shop_name} className="h-full w-full object-cover"  onError={(e) => { const t = e.currentTarget as HTMLImageElement; if (!t.dataset.fb) { t.dataset.fb = "1"; t.src = `https://picsum.photos/seed/${encodeURIComponent(t.alt || "art")}/600/600`; } }} />
-                ) : <User className="h-7 w-7 text-primary" />}
+                <SafeImage
+                  src={artist.profile_photo_url}
+                  alt={artist.shop_name}
+                  kind="avatar"
+                  fallbackSeed={artist.id || artist.shop_name}
+                  className="h-full w-full object-cover"
+                />
               </div>
               <div>
                 <h3 className="font-semibold">{artist.shop_name}</h3>

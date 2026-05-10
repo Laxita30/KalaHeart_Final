@@ -4,7 +4,6 @@ import {
   Heart,
   ShoppingCart,
   Star,
-  User,
   ArrowLeft,
   Loader2,
   MessageCircle,

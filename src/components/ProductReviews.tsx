@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { formatDistanceToNow } from "date-fns";
+import SafeImage from "@/components/SafeImage";
 
 type Review = {
   id: string;
@@ -154,7 +155,13 @@ const ProductReviews = ({ productId }: { productId: string }) => {
                   <div className="flex items-center gap-2">
                     <div className="h-8 w-8 rounded-full bg-accent flex items-center justify-center overflow-hidden text-xs font-semibold">
                       {r.profiles?.avatar_url ? (
-                        <img src={r.profiles.avatar_url} alt={name} className="h-full w-full object-cover" />
+                        <SafeImage
+                          src={r.profiles.avatar_url}
+                          alt={name}
+                          kind="avatar"
+                          fallbackSeed={r.id}
+                          className="h-full w-full object-cover"
+                        />
                       ) : (
                         name.charAt(0).toUpperCase()
                       )}

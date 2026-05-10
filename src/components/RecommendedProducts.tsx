@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Sparkles, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { logRecClick, logRecImpressions } from "@/lib/recAnalytics";
+import SafeImage from "@/components/SafeImage";
 
 type RecProduct = {
   id: string;
@@ -109,14 +110,13 @@ const RecommendedProducts = ({
               className="group block rounded-lg border bg-card overflow-hidden hover:shadow-lg transition-shadow"
             >
               <div className="aspect-square overflow-hidden bg-muted">
-                {p.images?.[0] ? (
-                  <img
-                    src={p.images[0]}
-                    alt={p.title}
-                    loading="lazy"
-                    className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
-                   onError={(e) => { const t = e.currentTarget as HTMLImageElement; if (!t.dataset.fb) { t.dataset.fb = "1"; t.src = `https://picsum.photos/seed/${encodeURIComponent(t.alt || "art")}/600/600`; } }} />
-                ) : null}
+                <SafeImage
+                  src={p.images?.[0]}
+                  alt={p.title}
+                  kind="product"
+                  fallbackSeed={p.id}
+                  className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
               </div>
               <div className="p-4">
                 <div className="flex items-start justify-between gap-2">

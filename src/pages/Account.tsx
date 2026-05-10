@@ -17,6 +17,8 @@ const Account = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [pw, setPw] = useState({ next: "", confirm: "" });
+  const [pwSaving, setPwSaving] = useState(false);
   const [form, setForm] = useState({
     first_name: "",
     last_name: "",
@@ -84,6 +86,26 @@ const Account = () => {
     }
   };
 
+  const changePassword = async () => {
+    if (pw.next.length < 8) {
+      toast({ title: "Password too short", description: "Use at least 8 characters.", variant: "destructive" });
+      return;
+    }
+    if (pw.next !== pw.confirm) {
+      toast({ title: "Passwords do not match", variant: "destructive" });
+      return;
+    }
+    setPwSaving(true);
+    const { error } = await supabase.auth.updateUser({ password: pw.next });
+    setPwSaving(false);
+    if (error) {
+      toast({ title: "Password update failed", description: error.message, variant: "destructive" });
+    } else {
+      setPw({ next: "", confirm: "" });
+      toast({ title: "Password updated" });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
@@ -141,6 +163,35 @@ const Account = () => {
                 </div>
               </div>
             )}
+          </Card>
+          <Card className="p-6 mt-6">
+            <h2 className="text-xl font-semibold mb-1">Change password</h2>
+            <p className="text-sm text-muted-foreground mb-4">Update your account password. Use at least 8 characters.</p>
+            <div className="space-y-4">
+              <div>
+                <Label>New password</Label>
+                <Input
+                  type="password"
+                  autoComplete="new-password"
+                  value={pw.next}
+                  onChange={(e) => setPw((p) => ({ ...p, next: e.target.value }))}
+                  className="mt-1.5"
+                />
+              </div>
+              <div>
+                <Label>Confirm new password</Label>
+                <Input
+                  type="password"
+                  autoComplete="new-password"
+                  value={pw.confirm}
+                  onChange={(e) => setPw((p) => ({ ...p, confirm: e.target.value }))}
+                  className="mt-1.5"
+                />
+              </div>
+              <Button onClick={changePassword} disabled={pwSaving || !pw.next || !pw.confirm} size="lg">
+                {pwSaving ? "Updating…" : "Update password"}
+              </Button>
+            </div>
           </Card>
         </div>
       </main>

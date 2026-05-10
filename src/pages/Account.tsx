@@ -164,6 +164,35 @@ const Account = () => {
               </div>
             )}
           </Card>
+          <Card className="p-6 mt-6">
+            <h2 className="text-xl font-semibold mb-1">Change password</h2>
+            <p className="text-sm text-muted-foreground mb-4">Update your account password. Use at least 8 characters.</p>
+            <div className="space-y-4">
+              <div>
+                <Label>New password</Label>
+                <Input
+                  type="password"
+                  autoComplete="new-password"
+                  value={pw.next}
+                  onChange={(e) => setPw((p) => ({ ...p, next: e.target.value }))}
+                  className="mt-1.5"
+                />
+              </div>
+              <div>
+                <Label>Confirm new password</Label>
+                <Input
+                  type="password"
+                  autoComplete="new-password"
+                  value={pw.confirm}
+                  onChange={(e) => setPw((p) => ({ ...p, confirm: e.target.value }))}
+                  className="mt-1.5"
+                />
+              </div>
+              <Button onClick={changePassword} disabled={pwSaving || !pw.next || !pw.confirm} size="lg">
+                {pwSaving ? "Updating…" : "Update password"}
+              </Button>
+            </div>
+          </Card>
         </div>
       </main>
       <Footer />

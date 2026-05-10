@@ -45,6 +45,7 @@ const SafeImage = React.forwardRef<HTMLImageElement, SafeImageProps>(
     return (
       <img
         ref={ref}
+        {...rest}
         src={current}
         alt={alt}
         loading={rest.loading ?? "lazy"}
@@ -58,7 +59,6 @@ const SafeImage = React.forwardRef<HTMLImageElement, SafeImageProps>(
           }
           onError?.(e);
         }}
-        {...rest}
       />
     );
   },

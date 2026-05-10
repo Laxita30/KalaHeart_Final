@@ -8,6 +8,7 @@ import ChatThreadView from "@/components/ChatThreadView";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import SafeImage from "@/components/SafeImage";
 
 const ChatArtist = () => {
   const { artistUserId } = useParams();
@@ -103,9 +104,11 @@ const ChatArtist = () => {
         {prefillProduct && (
           <div className="mt-3 flex items-center gap-3 rounded-md border bg-card p-3">
             {prefillProduct.image && (
-              <img
+              <SafeImage
                 src={prefillProduct.image}
                 alt={prefillProduct.title}
+                kind="product"
+                fallbackSeed={prefillProduct.title}
                 className="h-14 w-14 rounded-md object-cover border"
               />
             )}

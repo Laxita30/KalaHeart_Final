@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Chatbot from "@/components/Chatbot";
 import RequireAuth from "@/components/RequireAuth";
+import BackButton from "@/components/BackButton";
 import AutoTranslator from "@/i18n/AutoTranslator";
 import Index from "./pages/Index";
 import BrowseProducts from "./pages/BrowseProducts";
@@ -85,6 +86,7 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
           <Chatbot />
+          <BackButton />
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>

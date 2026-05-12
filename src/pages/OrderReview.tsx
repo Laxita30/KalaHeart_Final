@@ -247,6 +247,46 @@ const OrderReview = () => {
                 maxLength={1000}
                 className="mt-4"
               />
+              <div className="mt-3">
+                <div className="flex flex-wrap gap-2">
+                  {d.images.map((url) => (
+                    <div key={url} className="relative h-20 w-20 rounded-md overflow-hidden border">
+                      <img src={url} alt="Review" className="h-full w-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(it.product_id, url)}
+                        className="absolute top-0.5 right-0.5 bg-background/90 rounded-full p-0.5 hover:bg-background"
+                        aria-label="Remove photo"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                  {d.images.length < 4 && (
+                    <label className="h-20 w-20 rounded-md border border-dashed flex flex-col items-center justify-center cursor-pointer text-xs text-muted-foreground hover:bg-accent">
+                      {d.uploading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <>
+                          <ImagePlus className="h-4 w-4 mb-1" />
+                          Add photo
+                        </>
+                      )}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        onChange={(e) => {
+                          handleUpload(it.product_id, e.target.files);
+                          e.target.value = "";
+                        }}
+                      />
+                    </label>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Up to 4 photos, max 5MB each.</p>
+              </div>
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <Switch

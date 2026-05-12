@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { ShoppingCart, Trash2, Loader2, MapPin, Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/contexts/AuthContext";
@@ -18,6 +19,7 @@ const Cart = () => {
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [address, setAddress] = useState("");
+  const [specialRequest, setSpecialRequest] = useState("");
   const [placing, setPlacing] = useState(false);
 
   const load = async () => {
@@ -85,7 +87,7 @@ const Cart = () => {
     }
     setPlacing(true);
     try {
-      const order = await placeOrder(address);
+      const order = await placeOrder(address, specialRequest);
       toast({ title: "Order placed!", description: `Order #${order.id.slice(0, 8)}` });
       navigate(`/orders/${order.id}`);
     } catch (e: any) {
@@ -196,6 +198,18 @@ const Cart = () => {
                   <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input value={address} onChange={(e) => setAddress(e.target.value)} className="pl-10" placeholder="Where to deliver?" />
                 </div>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-1.5 block">Special request (optional)</label>
+                <Textarea
+                  value={specialRequest}
+                  onChange={(e) => setSpecialRequest(e.target.value)}
+                  placeholder="Gift wrap, custom note, delivery instructions…"
+                  rows={3}
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  The artist will see this with your order.
+                </p>
               </div>
               <Button className="w-full" size="lg" onClick={handlePlace} disabled={placing || hasStockIssue}>
                 {placing ? <><Loader2 className="h-4 w-4 animate-spin" /> Placing…</> : "Place order"}

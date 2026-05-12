@@ -121,7 +121,7 @@ export async function getProduct(id: string) {
   return data;
 }
 
-export async function placeOrder(shippingAddress: string) {
+export async function placeOrder(shippingAddress: string, specialRequest?: string) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Must be logged in");
 
@@ -153,6 +153,7 @@ export async function placeOrder(shippingAddress: string) {
       total_price: total,
       status: "pending",
       shipping_address: shippingAddress,
+      special_request: specialRequest?.trim() || null,
     })
     .select()
     .single();
@@ -290,11 +291,25 @@ export async function getMyArtistOrders() {
   if (ids.length === 0) return [];
   const { data, error } = await supabase
     .from("order_items")
-    .select("*, products(title, images), orders(id, status, created_at, shipping_address, user_id)")
+    .select("*, products(title, images), orders(id, status, created_at, shipping_address, special_request, user_id)")
     .in("product_id", ids)
     .order("created_at", { ascending: false });
   if (error) throw error;
-  return data || [];
+  const rows = data || [];
+  const buyerIds = Array.from(
+    new Set(rows.map((r: any) => r.orders?.user_id).filter(Boolean)),
+  );
+  if (buyerIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("user_id, first_name, last_name, email, phone")
+      .in("user_id", buyerIds);
+    const byId = new Map((profiles || []).map((p: any) => [p.user_id, p]));
+    for (const r of rows as any[]) {
+      if (r.orders?.user_id) r.buyer = byId.get(r.orders.user_id) || null;
+    }
+  }
+  return rows;
 }
 
 export async function updateOrderStatus(orderId: string, status: string) {

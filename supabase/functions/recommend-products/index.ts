@@ -138,17 +138,18 @@ Deno.serve(async (req) => {
     });
 
     if (!aiResp.ok) {
-      if (aiResp.status === 429 || aiResp.status === 402) {
-        // Graceful fallback to category/popularity
-        const fallback = scoreFallback(candidates, profile, limit);
-        return new Response(
-          JSON.stringify({ productIds: fallback.map((p) => p.id), reason: "fallback" }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } },
-        );
-      }
       const t = await aiResp.text();
       console.error("AI gateway error", aiResp.status, t);
-      throw new Error("AI gateway error");
+      // Graceful fallback for any AI gateway failure
+      const fallback = scoreFallback(candidates, profile, limit);
+      return new Response(
+        JSON.stringify({
+          productIds: fallback.map((p) => p.id),
+          reason: "fallback",
+          fallback: true,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
     const aiJson = await aiResp.json();
@@ -170,8 +171,12 @@ Deno.serve(async (req) => {
   } catch (e) {
     console.error("recommend-products error", e);
     return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error", productIds: [] }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      JSON.stringify({
+        error: e instanceof Error ? e.message : "Unknown error",
+        productIds: [],
+        fallback: true,
+      }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
 });

@@ -121,7 +121,7 @@ export async function getProduct(id: string) {
   return data;
 }
 
-export async function placeOrder(shippingAddress: string) {
+export async function placeOrder(shippingAddress: string, specialRequest?: string) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Must be logged in");
 
@@ -153,6 +153,7 @@ export async function placeOrder(shippingAddress: string) {
       total_price: total,
       status: "pending",
       shipping_address: shippingAddress,
+      special_request: specialRequest?.trim() || null,
     })
     .select()
     .single();

@@ -1,3 +1,4 @@
-# Welcome to your Lovable project
+# Welcome to our Project
 
-TODO: Document your project here
+Introducing KalaHeart platform
+KalaHeart empowers local artisans by connecting them with a global audience, enriching lives through unique, handcrafted creations
